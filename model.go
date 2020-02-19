@@ -1,12 +1,16 @@
 package main
 
 type Users struct {
-	Id        string `form:"id" json:"id"`
   Username  string `form:"username" json:"username"`
-  Email     string `form:"email" json:"email"`
-	FirstName string `form:"firstname" json:"firstname"`
-	LastName  string `form:"lastname" json:"lastname"`
-  Location  string `form:"location" json:"location"`
+  Password  string `form:"password" json:"password"`
+}
+
+type JwtToken struct {
+  Token     string `json:"token"`
+}
+
+type Exception struct {
+  Message   string `json:"message"`
 }
 
 type Blogs struct {
