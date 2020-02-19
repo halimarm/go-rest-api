@@ -14,65 +14,6 @@ import (
   "github.com/mitchellh/mapstructure"
 )
 
-func getAllUsers(w http.ResponseWriter, r *http.Request) {
-  var users Users
-  var arr_user []Users
-  var response ResUsers
-
-  db := connect()
-  defer db.Close()
-
-  rows, err := db.Query("Select username, password from users")
-  if err != nil {
-    log.Print(err)
-  }
-
-  for rows.Next() {
-    if err := rows.Scan(&users.Username, &users.Password); err != nil {
-      log.Fatal(err.Error())
-    } else {
-      arr_user = append(arr_user, users)
-    }
-  }
-
-  response.Status = true
-  response.Message = "Success"
-  response.Data = arr_user
-
-  w.Header().Set("Content-Type", "application/json")
-  json.NewEncoder(w).Encode(response)
-
-}
-
-func getAllBlogs(w http.ResponseWriter, r *http.Request) {
-  var blogs Blogs
-  var arr_blog []Blogs
-  var response ResBlogs
-
-  db := connect()
-  defer db.Close()
-
-  rows, err := db.Query("Select id, title, slug, content from blogs")
-  if err != nil {
-    log.Print(err)
-  }
-
-  for rows.Next() {
-    if err := rows.Scan(&blogs.Id, &blogs.Title, &blogs.Slug, &blogs.Content); err != nil {
-      log.Fatal(err.Error())
-    } else {
-      arr_blog = append(arr_blog, blogs)
-    }
-  }
-
-  response.Status = true
-  response.Message = "Success"
-  response.Data = arr_blog
-
-  w.Header().Set("Content-Type", "application/json")
-  json.NewEncoder(w).Encode(response)
-
-}
 
 func CreateTokenEndpoint(w http.ResponseWriter, req *http.Request) {
   var users Users
@@ -141,6 +82,67 @@ func TestEndpoint(w http.ResponseWriter, req *http.Request) {
   json.NewEncoder(w).Encode(users)
 }
 
+func getAllUsers(w http.ResponseWriter, r *http.Request) {
+  var users Users
+  var arr_user []Users
+  var response ResUsers
+
+  db := connect()
+  defer db.Close()
+
+  rows, err := db.Query("Select id, username, location from users")
+  if err != nil {
+    log.Print(err)
+  }
+
+  for rows.Next() {
+    if err := rows.Scan(&users.Id, &users.Username, &users.Location); err != nil {
+      log.Fatal(err.Error())
+    } else {
+      arr_user = append(arr_user, users)
+    }
+  }
+
+  response.Status = true
+  response.Message = "Success"
+  response.Data = arr_user
+
+  w.Header().Set("Content-Type", "application/json")
+  json.NewEncoder(w).Encode(response)
+
+}
+
+func getAllBlogs(w http.ResponseWriter, r *http.Request) {
+  var blogs Blogs
+  var arr_blog []Blogs
+  var response ResBlogs
+
+  db := connect()
+  defer db.Close()
+
+  rows, err := db.Query("Select id, title, slug, content from blogs")
+  if err != nil {
+    log.Print(err)
+  }
+
+  for rows.Next() {
+    if err := rows.Scan(&blogs.Id, &blogs.Title, &blogs.Slug, &blogs.Content); err != nil {
+      log.Fatal(err.Error())
+    } else {
+      arr_blog = append(arr_blog, blogs)
+    }
+  }
+
+  response.Status = true
+  response.Message = "Success"
+  response.Data = arr_blog
+
+  w.Header().Set("Content-Type", "application/json")
+  json.NewEncoder(w).Encode(response)
+
+}
+
+
 func index(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, "null")
 }
@@ -150,7 +152,8 @@ func main() {
   router.HandleFunc("/", index)
   router.HandleFunc("/authenticate", CreateTokenEndpoint).Methods("POST")
   router.HandleFunc("/protected", ProtectedEndpoint).Methods("GET")
-  router.HandleFunc("/blogs", getAllBlogs).Methods("GET")
+  router.HandleFunc("/blogs", ValidateMiddleware(getAllBlogs)).Methods("GET")
+  router.HandleFunc("/users", ValidateMiddleware(getAllUsers)).Methods("GET")
   router.HandleFunc("/test", ValidateMiddleware(TestEndpoint)).Methods("GET")
   http.Handle("/", router)
   fmt.Println("Connected to port 8080")

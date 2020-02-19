@@ -1,8 +1,10 @@
 package main
 
 type Users struct {
+  Id        string `form:"id" json:"id"`
   Username  string `form:"username" json:"username"`
   Password  string `form:"password" json:"password"`
+  Location  string `form:"location" json:"location"`
 }
 
 type JwtToken struct {
